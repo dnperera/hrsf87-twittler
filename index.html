@@ -1,27 +1,163 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
+    <script type="text/javascript" src="moment.js"></script>
   </head>
   <body>
+    <div class="container">
+        <div class="row">
+          <div class="col-md-12" >
+            <div class="panel panel-primary">
+              <div class="panel-heading username">Twittler</div>
+              <div class="well well-sm">
+                <div class="row">
+                  <div class="col-md-4" >
+                    <button style="margin: 10px;" class="btn btn-success" id="newTweets">New Tweets >>
+                    </button>
+                    <button style="margin: 10px;" class="btn btn-warning" id="oldTweets">Old Tweets >>
+                    </button>
+                  </div>
+                  <div class="col-md-8" id="users">
+                  </div>
+                </div>
+              </div>
+              <div class="well well-lg form-inline">
+                  <div class="row">
+                    <div class="col-md-12" >
+                      <h3>Add New Tweet</h3>
+                    </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-md-3" >
+                        <label for="usr">Name:</label>
+                        <input id="usr" type="text" class="form-control" name="name" placeholder="Your Name">
+                      </div>
+                      <div class="col-md-3" >
+                        <label for="msg">Message:</label>
+                        <input id="msg" type="text" class="form-control" name="message" placeholder="Your Message">
+                      </div>
+                      <div class="col-md-6" >
+                        <button class="btn btn-primary" onClick="addMessage()">Submit</button>
+                      </div>
+                  </div>
+              </div>
+              <div class="panel-body" id="tweets">
+
+                <div class="well well-sm message">
+                  <p>User:</p>
+                  <p>Message:</p>
+                  <p>Created At :</p>
+                </div>
+              </div>
+            </div>
+         </div>
+        </div>
+    </div>
     <script>
 
-      $(document).ready(function(){
-        var $body = $('body');
-        $body.html('');
+      //$(document).ready(function(){
+        //var $body = $('body');
+        //$body.html('');
 
+        // var index = streams.home.length - 1;
+        // console.log('index',index);
+        // while(index >= 0){
+        //   var tweet = streams.home[index];
+          // var $tweet = $('<div></div>');
+          // $tweet.text('@' + tweet.user + ': ' + tweet.message);
+          // $tweet.appendTo($body);
+          // index -= 1;
+          //displayTweets(tweet.user,tweet.message,tweet.created_at);
+        // }
+
+      //});
+      function getTweets(status){
+        //var index
         var index = streams.home.length - 1;
-        while(index >= 0){
-          var tweet = streams.home[index];
-          var $tweet = $('<div></div>');
-          $tweet.text('@' + tweet.user + ': ' + tweet.message);
-          $tweet.appendTo($body);
-          index -= 1;
-        }
+        var counter=0;
+        document.getElementById("tweets").innerHTML = '';
+        while(counter < 10){
+          var tweet="";
+          if(status){
+            tweet = streams.home[index-counter];
+          }
+          else{
+            tweet = streams.home[counter];
+          }
+            
+          displayTweets(tweet.user,tweet.message,tweet.created_at);
 
+          counter++;
+        }
+      }
+
+      function createUSerButtons(){
+        var userDiv = document.getElementById("users");
+        for(var i=0; users.length >i;i++){
+          var button = document.createElement("button");
+          button.setAttribute("data", users[i]);
+          button.setAttribute("class","btn btn-info");
+          button.setAttribute("onClick","getUserTweets('"+users[i]+"')");
+          button.style.margin ="10px";
+          button.style.color ="#050505";
+          button.innerHTML=users[i];
+          userDiv.appendChild(button);
+        }
+      }
+
+      //Display all the available users in button format
+      createUSerButtons();
+      //Display newly generated tweets when page loads
+      getTweets(true);
+
+      function displayTweets(user,message,time){
+        var divTag = document.createElement("div");
+        divTag.setAttribute("class","well well-sm message");
+        var name =document.createElement("p");
+        name.innerHTML ="Name : "+user;
+        divTag.appendChild(name);
+
+        var content =document.createElement("p");
+        content.innerHTML ="Message : "+message;
+        divTag.appendChild(content);
+
+        var createTime =document.createElement("p");
+        //use moment.js library to format the time stamp
+        createTime.innerHTML ="Created At : "+moment(time).format('llll')+
+        "-- <b>"+moment(time).startOf('second').fromNow()+"</b>";
+        divTag.appendChild(createTime);
+        document.getElementById("tweets").append(divTag);
+      }
+
+      //Add event listner to the button to load newest 10 tweets
+      document.getElementById("newTweets").addEventListener("click",() =>{
+        getTweets(true);
       });
 
+      document.getElementById("oldTweets").addEventListener("click",() =>{
+        getTweets(false);
+      });
+
+      function getUserTweets(userName){
+        var userMessages = streams.users[userName];
+
+        document.getElementById("tweets").innerHTML = '';
+        for(var i=0;userMessages.length >i; i++){
+          displayTweets(userMessages[i].user,userMessages[i].message,userMessages[i].created_at);
+        }
+      }
+
+      function addMessage(){
+        window.visitor =document.getElementById("usr").value;
+        streams.users[window.visitor] =[];
+        writeTweet(document.getElementById("msg").value);
+        document.getElementById("usr").value = "";
+        document.getElementById("msg").value = "";
+        getTweets(true);
+      }
     </script>
   </body>
 </html>
